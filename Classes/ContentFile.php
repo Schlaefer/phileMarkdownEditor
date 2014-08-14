@@ -1,6 +1,6 @@
 <?php
 
-	namespace Phile\Plugin\Siezi\MarkdownEditor;
+	namespace Phile\Plugin\Siezi\PhileMarkdownEditor;
 
 	use Phile\Exception;
 

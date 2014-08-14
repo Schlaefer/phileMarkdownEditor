@@ -1,6 +1,6 @@
 <?php
 
-	namespace Phile\Plugin\Siezi\MarkdownEditor;
+	namespace Phile\Plugin\Siezi\PhileMarkdownEditor;
 
 	include dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'lib' . DIRECTORY_SEPARATOR . 'password.php';
 

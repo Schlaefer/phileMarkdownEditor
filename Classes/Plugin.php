@@ -1,6 +1,6 @@
 <?php
 
-	namespace Phile\Plugin\Siezi\MarkdownEditor;
+	namespace Phile\Plugin\Siezi\PhileMarkdownEditor;
 
 	use Phile\Exception;
 
@@ -187,7 +187,7 @@ Date: ' . date('Y-m-d') . '
 
 		protected function _render($file, $vars = []) {
 			$vars += $this->_phile;
-			$vars += ['pluginUrl' => $this->_phile['base_url'] . '/plugins/siezi/markdownEditor'];
+			$vars += ['pluginUrl' => $this->_phile['base_url'] . '/plugins/siezi/phileMarkdownEditor'];
 			$this->_Response->body = $this->_TemplateEngine->render(
 				'pages' . DIRECTORY_SEPARATOR . $file . '.twig', $vars);
 		}
