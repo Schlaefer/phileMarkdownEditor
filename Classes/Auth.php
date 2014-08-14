@@ -6,6 +6,14 @@
 
 	include dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'lib' . DIRECTORY_SEPARATOR . 'password.php';
 
+	/**
+	 * Class Auth
+	 *
+	 * @author Schlaefer <openmail+sourcecode@siezi.com>
+	 * @link https://github.com/Schlaefer/phileMarkdownEditor
+	 * @license http://opensource.org/licenses/MIT
+	 * @package Phile\Plugin\Siezi\PhileMarkdownEditor
+	 */
 	class Auth {
 
 		const SESSION_KEY = 'sieziMarkdownEditor';

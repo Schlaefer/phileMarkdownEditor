@@ -4,6 +4,15 @@
 
 	use Phile\Exception;
 
+	/**
+	 * Markdown editor plugin for Phile
+	 *
+	 * @author Schlaefer <openmail+sourcecode@siezi.com>
+	 * @link https://github.com/Schlaefer/phileMarkdownEditor
+	 * @license http://opensource.org/licenses/MIT
+	 * @package Phile\Plugin\Siezi\PhileMarkdownEditor
+	 */
+
 	class Plugin extends \Phile\Plugin\AbstractPlugin implements \Phile\Gateway\EventObserverInterface {
 
 		protected $_allowedActions = [

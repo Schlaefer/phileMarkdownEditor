@@ -2,6 +2,14 @@
 
 	namespace Phile\Plugin\Siezi\PhileMarkdownEditor;
 
+	/**
+	 * Class Response
+	 *
+	 * @author Schlaefer <openmail+sourcecode@siezi.com>
+	 * @link https://github.com/Schlaefer/phileMarkdownEditor
+	 * @license http://opensource.org/licenses/MIT
+	 * @package Phile\Plugin\Siezi\PhileMarkdownEditor
+	 */
 	class Response {
 
 		public $body = '';
@@ -23,7 +31,7 @@
 		}
 
 		public function send() {
-			// Override Phile's 404 header
+			// override Phile's 404 header
 			$this->_headers[] = $_SERVER['SERVER_PROTOCOL'] . ' 200 OK';
 			foreach($this->_headers as $header) {
 				header($header);

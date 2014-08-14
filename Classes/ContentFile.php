@@ -4,6 +4,14 @@
 
 	use Phile\Exception;
 
+	/**
+	 * Class ContentFile
+	 *
+	 * @author Schlaefer <openmail+sourcecode@siezi.com>
+	 * @link https://github.com/Schlaefer/phileMarkdownEditor
+	 * @license http://opensource.org/licenses/MIT
+	 * @package Phile\Plugin\Siezi\PhileMarkdownEditor
+	 */
 	class ContentFile {
 
 		protected $_filename;

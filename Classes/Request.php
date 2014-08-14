@@ -2,6 +2,14 @@
 
 	namespace Phile\Plugin\Siezi\PhileMarkdownEditor;
 
+	/**
+	 * Class Request
+	 *
+	 * @author Schlaefer <openmail+sourcecode@siezi.com>
+	 * @link https://github.com/Schlaefer/phileMarkdownEditor
+	 * @license http://opensource.org/licenses/MIT
+	 * @package Phile\Plugin\Siezi\PhileMarkdownEditor
+	 */
 	class Request {
 
 		protected $_base;
