@@ -129,40 +129,6 @@ Date: ' . date('Y-m-d') . '
 			$this->_render('password', $data);
 		}
 
-		protected function _file($fileUrl) {
-			$file = basename(strip_tags($fileUrl));
-			if(!$file) die('Error: Invalid file');
-
-			$file = CONTENT_DIR . $file . CONTENT_EXT;
-			if (!file_exists($file)) {
-				throw new \Exception;
-			}
-			return $file;
-		}
-
-		protected function _slugify($text) {
-			// replace non letter or digits by -
-			$text = preg_replace('~[^\\pL\d]+~u', '-', $text);
-
-			// trim
-			$text = trim($text, '-');
-
-			// transliterate
-			$text = iconv('utf-8', 'us-ascii//TRANSLIT', $text);
-
-			// lowercase
-			$text = strtolower($text);
-
-			// remove unwanted characters
-			$text = preg_replace('~[^-\w]+~', '', $text);
-
-			if (empty($text)) {
-				return 'n-a';
-			}
-
-			return $text;
-		}
-
 		protected function _dispatch() {
 			$action = $this->_Request->getAction();
 
@@ -172,7 +138,8 @@ Date: ' . date('Y-m-d') . '
 				return;
 			}
 
-			$authorized = $this->_Auth->auth($this->_Request, $this->settings['password']);
+			$authorized = $this->_Auth->auth($this->_Request,
+				$this->settings['password']);
 			if (in_array($action, $this->_allowedActions)) {
 				if ($action === 'login' && $authorized) {
 					$this->_Response->redirect('index');
