@@ -32,5 +32,5 @@ After you have installed the plugin. You need to add the following line to your 
 
 ### 4. Login ###
 
-1. goto `admin/index` to login
+1. goto `admin/` to login
 

@@ -35,6 +35,7 @@
 		public function on($eventKey, $data = null) {
 			if ($eventKey === 'request_uri') {
 				$this->_Request->setUri($data['uri']);
+				$this->_Request->setBase($this->settings['uri']);
 				return;
 			}
 
@@ -131,6 +132,10 @@ Date: ' . date('Y-m-d') . '
 
 		protected function _dispatch() {
 			$action = $this->_Request->getAction();
+
+			if ($action === '/') {
+				$this->_Response->redirect('index');
+			}
 
 			$reflection = new \ReflectionMethod($this, $action);
 			if ($action === 'on' || !$reflection->isPublic()) {

@@ -25,7 +25,7 @@
 			$this->_uri = $uri;
 		}
 
-		public function setbase($base) {
+		public function setBase($base) {
 			$this->_base = $base;
 		}
 
@@ -36,6 +36,10 @@
 		public function getAction() {
 			$uri = rtrim($this->_uri, '/');
 			$base = rtrim($this->_base, '/');
+
+			if ($uri === $base) {
+				return '/';
+			}
 
 			preg_match("/$base\/(?P<action>.*)(\/)?$/", $uri, $matches);
 			if (!empty($matches['action'])) {
