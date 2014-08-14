@@ -25,12 +25,10 @@ After you have installed the plugin. You need to add the following line to your 
 	$config['plugins']['siezi\\markdownEditor'] = array('active' => true);
 
 
-### 3. Set a password ###
+### 3. Start ###
 
 1. goto `admin/password` and create a password hash
 2. put this hash into `admin/config.php` as password
+3. goto `admin/` to login
 
-### 4. Login ###
-
-1. goto `admin/` to login
 

@@ -46,7 +46,7 @@
 
 			if ($eventKey === 'template_engine_registered') {
 				$this->_phile = $data['data'];
-				$this->_Auth = new Auth();
+				$this->_Auth = new Auth($this->_Request, $this->settings['password']);
 				$this->_Response = new Response($this->_phile['base_url'],
 					$this->settings['uri']);
 
@@ -62,7 +62,8 @@
 		}
 
 		public function login() {
-			$this->_render('login');
+			$data['authEnabled'] = $this->_Auth->authEnabled();
+			$this->_render('login', $data);
 		}
 
 		public function logout() {
@@ -143,8 +144,7 @@ Date: ' . date('Y-m-d') . '
 				return;
 			}
 
-			$authorized = $this->_Auth->auth($this->_Request,
-				$this->settings['password']);
+			$authorized = $this->_Auth->auth();
 			if (in_array($action, $this->_allowedActions)) {
 				if ($action === 'login' && $authorized) {
 					$this->_Response->redirect('index');
