@@ -22,7 +22,7 @@ This is a rewrite/fork of [Pico-Editor-Plugin](https://github.com/gilbitron/Pico
 After you have installed the plugin. You need to add the following line to your `config.php` file:
 
 
-	$config['plugins']['siezi\\markdownEditor'] = array('active' => true);
+	$config['plugins']['siezi\\phileMarkdownEditor'] = array('active' => true);
 
 
 ### 3. Start ###
