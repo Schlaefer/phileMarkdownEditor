@@ -21,46 +21,54 @@
 		}
 
 		public function create($title, $content) {
-			$file = $this->_slugify(basename($title));
-			if (!$title) {
+			if (empty($title)) {
 				throw new \InvalidArgumentException;
 			}
-			$file .= CONTENT_EXT;
-			$this->_filename = $file;
-			if (file_exists(CONTENT_DIR . $this->_filename)) {
-				throw new Exception;
-			} else {
+			$this->_filename = $this->_slug(basename($title));
+			if ($this->exists()) {
+				throw new Exception("File '$this->_filename' already exists.");
 			}
-			file_put_contents(CONTENT_DIR . $this->_filename, $content);
+			file_put_contents($this->_fullPath(), $content);
 		}
 
 		public function getFilename() {
-			return basename(str_replace(CONTENT_EXT, '', $this->_filename));
+			return basename($this->_filename);
+		}
+
+		public function exists() {
+			return file_exists($this->_fullPath());
 		}
 
 		public function delete() {
-			unlink($this->_file($this->_filename));
+			unlink($this->_file());
 		}
 
 		public function read() {
-			return file_get_contents($this->_file($this->_filename));
+			return file_get_contents($this->_file());
 		}
 
 		public function write($content) {
-			if (!file_put_contents($this->_file($this->_filename), $content)) {
+			if (!file_put_contents($this->_file(), $content)) {
 				throw new Exception();
 			}
 		}
 
-		protected function _file($file) {
-			$file = CONTENT_DIR . $file . CONTENT_EXT;
+		protected function _file() {
+			$file = $this->_fullPath();
 			if (!file_exists($file)) {
 				throw new \Exception;
 			}
 			return $file;
 		}
 
-		protected function _slugify($text) {
+		protected function _fullPath() {
+			if (empty($this->_filename)) {
+				throw new \RuntimeException('Filename not set');
+			}
+			return CONTENT_DIR . $this->_filename . CONTENT_EXT;
+		}
+
+		protected function _slug($text) {
 			// replace non letter or digits by -
 			$text = preg_replace('~[^\\pL\d]+~u', '-', $text);
 

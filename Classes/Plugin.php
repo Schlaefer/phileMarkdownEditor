@@ -93,7 +93,7 @@ Date: ' . date('Y-m-d') . '
 			try {
 				$file->create($title, $content);
 			} catch (Exception $e) {
-				$error = 'Error: creating posting failed';
+				$error = $e->getMessage();
 			}
 
 			$this->_Response->type('json');
