@@ -52,12 +52,7 @@
 			}
 		}
 
-		protected function _file($fileUrl) {
-			$file = basename(strip_tags($fileUrl));
-			if (!$file) {
-				die('Error: Invalid file');
-			}
-
+		protected function _file($file) {
 			$file = CONTENT_DIR . $file . CONTENT_EXT;
 			if (!file_exists($file)) {
 				throw new \Exception;
