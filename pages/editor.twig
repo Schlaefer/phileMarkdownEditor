@@ -18,7 +18,7 @@
 		<ul class="nav">
 		{% for page in pages %}
 			<li><a href="#" data-url="{{ page.url }}" class="post"><span data-icon="3" aria-hidden="true"></span>{% if page.title %}{{ page.title }}{% else %}Untitled{% endif %}</a>
-			<a href="{{ page.url }}" target="_blank" class="view" title="View">5</a>
+			<a href="{{ base_url }}/{{ page.url }}" target="_blank" class="view" title="View">5</a>
 			<a href="#" data-url="{{ page.url }}" class="delete" title="Delete">4</a></li>
 		{% endfor %}
 		</ul>
