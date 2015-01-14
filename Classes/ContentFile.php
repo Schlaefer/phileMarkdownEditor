@@ -15,29 +15,61 @@
 	 */
 	class ContentFile {
 
-		protected $_filename;
+		/**
+		 * @var content directory
+		 */
+		protected $_contentDir;
 
+		/**
+		 * @var string path relative to content folder
+		 */
+		protected $_filepath;
+
+		/**
+		 * @var string full path
+		 */
 		protected $_fullPath;
 
 		public function __construct($filename = null) {
-			$this->_filename = $filename;
+			$this->_contentDir = CONTENT_DIR;
+			$this->_filepath = $filename;
 		}
 
 		public function create($title, $content) {
 			if (empty($title)) {
 				throw new \InvalidArgumentException;
 			}
-			$this->_filename = $this->_slug(basename($title));
-			$this->_fullPath = CONTENT_DIR . $this->_filename . CONTENT_EXT;
+
+			$path = explode('/', $title);
+			$name = array_pop($path);
+			if (empty($name)) {
+				throw new Exception("Empty name '$name' not allowed.");
+			}
+
+			//= add into existing subfolders
+			if (count($path)) {
+				$sub = '';
+				foreach ($path as $element) {
+					$sub .= $this->_slug($element) . DIRECTORY_SEPARATOR;
+				}
+				if (!file_exists($this->_contentDir . $sub)) {
+					throw new Exception("Subfolder '$sub' does not exist.");
+				}
+				$name = $sub . $name;
+			}
+
+			$this->_filepath = $name;
+			$this->_fullPath = $this->_contentDir . $this->_filepath . CONTENT_EXT;
 
 			if ($this->exists()) {
-				throw new Exception("File '$this->_filename' already exists.");
+				throw new Exception("File '$this->_filepath' already exists.");
 			}
+
 			file_put_contents($this->_getFullPath(), $content);
 		}
 
 		public function getFilename() {
-			return basename($this->_filename);
+			return $this->_filepath;
 		}
 
 		public function exists() {
@@ -72,12 +104,12 @@
 			}
 
 			// filename for root index is empty string
-			if (!is_string($this->_filename) && empty($this->_filename)) {
+			if (!is_string($this->_filepath) && empty($this->_filepath)) {
 				throw new \RuntimeException('Filename not set');
 			}
 
 			$PageRepository = new Page();
-			$this->_fullPath = $PageRepository->findByPath($this->_filename)
+			$this->_fullPath = $PageRepository->findByPath($this->_filepath)
 				->getFilePath();
 			return $this->_fullPath;
 		}

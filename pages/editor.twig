@@ -64,7 +64,7 @@
 			// New
 			$('.controls .new').on('click', function(e){
 				e.preventDefault();
-				var title = prompt('Please enter a post title', '');
+				var title = prompt('Please enter a post title. Use a forward slash to create in a subfolder (existing subfolders only).', '');
                 if (title === null || title === '') {
                     return;
                 }
