@@ -3,6 +3,7 @@
 	namespace Phile\Plugin\Siezi\PhileMarkdownEditor;
 
 	use Phile\Exception;
+	use Phile\Repository\Page;
 
 	/**
 	 * Class ContentFile
@@ -16,6 +17,8 @@
 
 		protected $_filename;
 
+		protected $_fullPath;
+
 		public function __construct($filename = null) {
 			$this->_filename = $filename;
 		}
@@ -25,10 +28,12 @@
 				throw new \InvalidArgumentException;
 			}
 			$this->_filename = $this->_slug(basename($title));
+			$this->_fullPath = CONTENT_DIR . $this->_filename . CONTENT_EXT;
+
 			if ($this->exists()) {
 				throw new Exception("File '$this->_filename' already exists.");
 			}
-			file_put_contents($this->_fullPath(), $content);
+			file_put_contents($this->_getFullPath(), $content);
 		}
 
 		public function getFilename() {
@@ -36,7 +41,7 @@
 		}
 
 		public function exists() {
-			return file_exists($this->_fullPath());
+			return file_exists($this->_getFullPath());
 		}
 
 		public function delete() {
@@ -54,18 +59,27 @@
 		}
 
 		protected function _file() {
-			$file = $this->_fullPath();
+			$file = $this->_getFullPath();
 			if (!file_exists($file)) {
 				throw new \Exception;
 			}
 			return $file;
 		}
 
-		protected function _fullPath() {
-			if (empty($this->_filename)) {
+		protected function _getFullPath() {
+			if (isset($this->_fullPath)) {
+				return $this->_fullPath;
+			}
+
+			// filename for root index is empty string
+			if (!is_string($this->_filename) && empty($this->_filename)) {
 				throw new \RuntimeException('Filename not set');
 			}
-			return CONTENT_DIR . $this->_filename . CONTENT_EXT;
+
+			$PageRepository = new Page();
+			$this->_fullPath = $PageRepository->findByPath($this->_filename)
+				->getFilePath();
+			return $this->_fullPath;
 		}
 
 		protected function _slug($text) {

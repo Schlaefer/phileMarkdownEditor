@@ -66,7 +66,7 @@
 			}
 		}
 
-		public function index() {
+		public function editor() {
 			$this->_render('editor');
 		}
 
@@ -144,7 +144,7 @@ Date: ' . date('Y-m-d') . '
 			$action = $this->_Request->getAction();
 
 			if ($action === '/') {
-				$this->_Response->redirect('index');
+				$this->_Response->redirect('editor');
 			}
 
 			$reflection = new \ReflectionMethod($this, $action);
@@ -156,7 +156,7 @@ Date: ' . date('Y-m-d') . '
 			$authorized = $this->_Auth->auth();
 			if (in_array($action, $this->_allowedActions)) {
 				if ($action === 'login' && $authorized) {
-					$this->_Response->redirect('index');
+					$this->_Response->redirect('editor');
 				}
 			} elseif (!$authorized) {
 				$this->_Response->redirect('login');
