@@ -15,7 +15,7 @@ This is a rewrite/fork of [Pico-Editor-Plugin](https://github.com/gilbitron/Pico
 ### 1.2 Installation (Download)
 
 * Install [Phile](https://github.com/PhileCMS/Phile)
-* Clone this repo into `plugins/siezi/markdownEditor`
+* Clone this repo into `plugins/siezi/phileMarkdownEditor`
 
 ### 2. Activation
 
@@ -27,8 +27,8 @@ After you have installed the plugin. You need to add the following line to your 
 
 ### 3. Start ###
 
-1. goto `admin/password` and create a password hash
-2. put this hash into `admin/config.php` as password
-3. goto `admin/` to login
+1. goto URL `admin/password` and create a password hash
+2. put this hash into `plugins/siezi/phileMarkdownEditor/config.php`
+3. goto URL `admin/` to login
 
 
