@@ -20,6 +20,8 @@
 
 		protected $_headers = [];
 
+		protected $_statusCode = 200;
+
 		public function __construct($baseUrl, $base) {
 			$this->_baseUrl = $baseUrl;
 			$this->_base = $base;
@@ -30,12 +32,16 @@
 			$this->stop();
 		}
 
+		public function setStatusCode($code) {
+			$this->_statusCode = $code;
+		}
+
 		public function send() {
-			// override Phile's 404 header
-			$this->_headers[] = $_SERVER['SERVER_PROTOCOL'] . ' 200 OK';
 			foreach($this->_headers as $header) {
 				header($header);
 			}
+			// override Phile's 404 header
+			http_response_code($this->_statusCode);
 			echo $this->body;
 			$this->stop();
 		}

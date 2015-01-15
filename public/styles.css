@@ -6,11 +6,11 @@
 
 @font-face {
 	font-family: 'icomoon';
-	src:url('fonts/icomoon.eot');
-	src:url('fonts/icomoon.eot?#iefix') format('embedded-opentype'),
-		url('fonts/icomoon.woff') format('woff'),
-		url('fonts/icomoon.ttf') format('truetype'),
-		url('fonts/icomoon.svg#icomoon') format('svg');
+	src:url('../fonts/icomoon.eot');
+	src:url('../fonts/icomoon.eot?#iefix') format('embedded-opentype'),
+		url('../fonts/icomoon.woff') format('woff'),
+		url('../fonts/icomoon.ttf') format('truetype'),
+		url('../fonts/icomoon.svg#icomoon') format('svg');
 	font-weight: normal;
 	font-style: normal;
 }
@@ -128,7 +128,7 @@ body {
 	box-sizing: border-box;
 }
 
-a, a:visited {
+a, a:visited, button {
 	color: #909396;
 	text-decoration: none;
 	-webkit-transition: all 0.2s linear;
@@ -206,6 +206,11 @@ a:hover, a:active {
 	margin: 38px 0 25px 0;
 	padding: 0;
 }
+
+.nav-folder {
+	font-size: smaller;
+}
+
 #sidebar li {
 	line-height: 25px;
 	position: relative;
@@ -218,7 +223,7 @@ a:hover, a:active {
 	white-space: nowrap;
 	overflow: hidden;
 }
-#sidebar li a.post {
+#sidebar li .post {
 	-webkit-transition: color 0.2s linear;
 	   -moz-transition: color 0.2s linear;
 	    -ms-transition: color 0.2s linear;
@@ -227,6 +232,7 @@ a:hover, a:active {
 }
 #sidebar li:hover a.post { padding-right: 55px; }
 #sidebar li a.open { color: #21272d; }
+#sidebar li .file { font-size: smaller; }
 #sidebar li .view,
 #sidebar li .delete {
 	position: absolute;
@@ -234,13 +240,14 @@ a:hover, a:active {
 	right: 0;
 	z-index: 9;
 	font-family: 'icomoon';
-	width: 15px;
 	height: 25px;
 	padding: 0;
 	border: 0;
 	padding: 0 5px;
 	margin: 0;
 	opacity: 0;
+	background: none;
+	border: none;
 }
 #sidebar li .view { right: 30px; }
 #sidebar li .delete { padding-right: 10px; }
@@ -268,7 +275,6 @@ a:hover, a:active {
 	top: 20px;
 	right: 20px;
 	z-index: 9999;
-	background: #8dc92d;
 	color: #fff;
 	padding: 2px 10px;
 	opacity: 0;
@@ -282,6 +288,9 @@ a:hover, a:active {
 	        transition: opacity 0.3s ease-out;
 }
 #saving.active { opacity: 1; }
+#saving.running { background: silver; }
+#saving.success { background: #8dc92d; }
+#saving.error { background: red; }
 
 /* Login Styles
 /*---------------------------------------------*/

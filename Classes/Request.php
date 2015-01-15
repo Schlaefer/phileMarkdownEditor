@@ -24,7 +24,23 @@
 
 		public function param($key) {
 			if (isset($this->_request[$key])) {
-				return $this->_request[$key];
+				$value = $this->_request[$key];
+			} else {
+				$value = $this->_paramBackbone($key);
+			}
+			return $value;
+		}
+
+		/**
+		 * Extract request param from backbone model request
+		 *
+		 * @param string $key
+		 * @return string|null
+		 */
+		protected function _paramBackbone($key) {
+			if (isset($this->_request['model'])) {
+				$model = json_decode($this->_request['model'], true);
+				return $model[$key];
 			}
 			return null;
 		}

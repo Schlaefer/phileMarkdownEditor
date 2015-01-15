@@ -16,7 +16,7 @@
 	 */
 	class Auth {
 
-		const SESSION_KEY = 'sieziMarkdownEditor';
+		const SESSION_KEY = 'sieziPhileMarkdownEditor';
 
 		protected $_hash;
 

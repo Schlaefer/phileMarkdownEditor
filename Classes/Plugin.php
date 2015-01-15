@@ -2,7 +2,10 @@
 
 	namespace Phile\Plugin\Siezi\PhileMarkdownEditor;
 
+	use Phile\Core\ServiceLocator;
+	use Phile\Core\Utility;
 	use Phile\Exception;
+	use Phile\Repository\Page;
 
 	/**
 	 * Markdown editor plugin for Phile
@@ -21,6 +24,9 @@
 			'password'
 		];
 
+		/**
+		 * @var Auth
+		 */
 		protected $_Auth;
 
 		protected $_Request;
@@ -67,7 +73,29 @@
 		}
 
 		public function editor() {
-			$this->_render('editor');
+			//= setup menuPages
+			$PageRepository = new Page();
+			$menuPages = $PageRepository->findAll(
+				['pages_order' => 'page.url:asc meta.title:asc']
+			);
+			$navData = [];
+			foreach ($menuPages as $page) {
+				$navData[] = [
+					'title' => $page->getTitle(),
+					'url' => $page->getUrl()
+				];
+			}
+
+			$appSettings = [
+				'baseUrl' => Utility::getBaseUrl()
+			];
+
+			$data = [
+				'appSettings' => json_encode($appSettings),
+				'navData' => json_encode($navData),
+			];
+
+			$this->_render('editor', $data);
 		}
 
 		public function login() {
@@ -81,28 +109,30 @@
 		}
 
 		public function create() {
-			$title = $this->_Request->param('title');
-			$content = '<!--
-Title: ' . $title . '
-Author:
-Date: ' . date('Y-m-d') . '
--->';
-
-			$file = new ContentFile();
-			$error = '';
 			try {
+				$title = $this->_Request->param('title');
+				$content = '<!--
+	Title: ' . $title . '
+	Author:
+	Date: ' . date('Y-m-d') . '
+	-->
+
+	';
+
+				$file = new ContentFile();
 				$file->create($title, $content);
+				$body = [
+					'title' => $title,
+					'content' => $content,
+					'url' => $file->getFilename(),
+				];
 			} catch (Exception $e) {
-				$error = $e->getMessage();
+				$this->_Response->setStatusCode(400);
+				$body = ['error' => $e->getMessage()];
 			}
 
 			$this->_Response->type('json');
-			$this->_Response->body = json_encode(array(
-				'title' => $title,
-				'content' => $content,
-				'file' => $file->getFilename(),
-				'error' => $error
-			));
+			$this->_Response->body = json_encode($body);
 		}
 
 		public function destroy() {
@@ -122,11 +152,19 @@ Date: ' . date('Y-m-d') . '
 			if (!$content) {
 				throw new Exception();
 			}
-			$title = $this->_Request->param('file');
+			$title = $this->_Request->param('show');
 			$file = new ContentFile($title);
 			$file->write($content);
 
-			$this->_Response->body = $content;
+			if (ServiceLocator::hasService('Phile_Cache')) {
+				$cache = ServiceLocator::getService('Phile_Cache');
+				$cache->clean();
+			}
+
+			$this->_Response->type('json');
+			$this->_Response->body = json_encode(
+				['content' => $content]
+			);
 		}
 
 		public function password() {
@@ -138,6 +176,10 @@ Date: ' . date('Y-m-d') . '
 				];
 			}
 			$this->_render('password', $data);
+		}
+
+		public function test() {
+			$this->_render('test');
 		}
 
 		protected function _dispatch() {
@@ -167,8 +209,13 @@ Date: ' . date('Y-m-d') . '
 		}
 
 		protected function _render($file, $vars = []) {
+			//= setup other view vars
 			$vars += $this->_phile;
-			$vars += ['pluginUrl' => $this->_phile['base_url'] . '/plugins/siezi/phileMarkdownEditor'];
+			$vars += [
+				'pluginUrl' => $this->_phile['base_url'] . '/plugins/siezi/phileMarkdownEditor'
+			];
+
+			//= render
 			$this->_Response->body = $this->_TemplateEngine->render(
 				'pages' . DIRECTORY_SEPARATOR . $file . '.twig', $vars);
 		}
