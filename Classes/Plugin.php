@@ -152,13 +152,15 @@
 			if (!$content) {
 				throw new Exception();
 			}
-			$title = $this->_Request->param('show');
-			$file = new ContentFile($title);
+			$url = $this->_Request->param('show');
+			$file = new ContentFile($url);
 			$file->write($content);
 
 			if (ServiceLocator::hasService('Phile_Cache')) {
+				$fullPath = $file->getFullPath();
 				$cache = ServiceLocator::getService('Phile_Cache');
-				$cache->clean();
+				$key = 'Phile_Model_Page_' . md5($fullPath);
+				$cache->delete($key);
 			}
 
 			$this->_Response->type('json');

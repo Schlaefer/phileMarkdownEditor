@@ -72,6 +72,10 @@
 			return $this->_filepath;
 		}
 
+		public function getFullPath() {
+			return $this->_getFullPath();
+		}
+
 		public function exists() {
 			return file_exists($this->_getFullPath());
 		}
