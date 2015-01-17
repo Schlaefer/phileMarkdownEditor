@@ -219,7 +219,7 @@
       }
     },
     startSavingDialog: function() {
-      $('#saving').text('Saving...').addClass('active');
+      $('#saving').css('display', 'block').text('Saving...').addClass('active');
     },
     endSavingDialogError: function() {
       $('#saving').text('Saving to server failed!')
