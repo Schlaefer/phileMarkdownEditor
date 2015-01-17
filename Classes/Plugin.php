@@ -155,13 +155,7 @@
 			$url = $this->_Request->param('show');
 			$file = new ContentFile($url);
 			$file->write($content);
-
-			if (ServiceLocator::hasService('Phile_Cache')) {
-				$fullPath = $file->getFullPath();
-				$cache = ServiceLocator::getService('Phile_Cache');
-				$key = 'Phile_Model_Page_' . md5($fullPath);
-				$cache->delete($key);
-			}
+			$this->_clearPageCache($file);
 
 			$this->_Response->type('json');
 			$this->_Response->body = json_encode(
@@ -182,6 +176,21 @@
 
 		public function test() {
 			$this->_render('test');
+		}
+
+		/**
+		 * clears page cache
+		 *
+		 * @param ContentFile $File
+		 * @throws Exception\ServiceLocatorException
+		 */
+		protected function _clearPageCache(ContentFile $File) {
+			if (ServiceLocator::hasService('Phile_Cache')) {
+				$fullPath = $File->getFullPath();
+				$cache = ServiceLocator::getService('Phile_Cache');
+				$key = 'Phile_Model_Page_' . md5($fullPath);
+				$cache->delete($key);
+			}
 		}
 
 		protected function _dispatch() {
