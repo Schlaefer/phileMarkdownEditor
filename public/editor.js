@@ -6,10 +6,65 @@
       $.post('destroy', {file: this.get('url')}, function(data) {
         Backbone.Model.prototype.destroy.apply(model, arguments);
       });
+    },
+    get: function (attr) {
+      var method = 'get' + attr.charAt(0).toUpperCase() + attr.slice(1);
+      if (typeof this[method] === 'function') {
+        return this[method]();
+      }
+      return Backbone.Model.prototype.get.call(this, attr);
+    },
+    getBasename: function() {
+      var paths = this.get('url').split('/');
+      var basename = paths.pop();
+      if (_.isEmpty(basename)) {
+        basename = 'index';
+      }
+      basename = basename + '.md';
+      return basename;
+    },
+    getDirname: function() {
+      var paths = this.get('url').split('/');
+      paths.pop();
+      paths = paths.join('/');
+      if (_.isEmpty(paths)) {
+        paths = null;
+      }
+      return paths;
     }
   });
   var NavbarPages = Backbone.Collection.extend({
-    model: NavbarPage
+    model: NavbarPage,
+    comparator: function(a, b) {
+      var dirnameA = a.get('dirname');
+      var dirnameB = b.get('dirname');
+      var basenameA = a.get('basename');
+      var basenameB = b.get('basename');
+
+      //= mix root id entries with folder
+      if (_.isEmpty(dirnameA)) {
+        dirnameA = basenameA;
+      }
+      if (_.isEmpty(dirnameB)) {
+        dirnameB = basenameB;
+      }
+
+      //= sort for folder
+      if (dirnameA < dirnameB) {
+        return -1;
+      } else if (dirnameA > dirnameB ) {
+        return 1;
+      }
+
+      //= sort for name if folder is equal
+      if (basenameA < basenameB) {
+        return -1;
+      } else if (basenameA > basenameB ) {
+        return 1;
+      }
+
+      return 0;
+    }
   });
   var NavbarPageView = Backbone.Marionette.ItemView.extend({
     tagName: 'li',
@@ -54,26 +109,28 @@
       }
     },
     onModelDestroy: function() {
+
       var editorPageId = app.reqres.request('editor:openPageId');
       if (editorPageId === this.model.get('url')) {
         app.reqres.request('editor:clear');
       }
       this.$el.removeClass('open');
     },
-    template: function(data) {
-      var template = $('#navbarPageView').html();
-      var dirname =  data.url.replace(/\/[^\/]*$/, '');
-
+    serializeData: function() {
+      var data = this.model.toJSON();
+      var dirname = this.model.getDirname();
       if (!data.title) {
         data.title = 'Untitled';
       }
-
-      data.file = data.url;
-      if (data.file === '') {
-        data.file = 'index';
+      data.file = '';
+      if (dirname) {
+        data.file = this.model.get('dirname') + '/';
       }
-      data.file = data.file + '.md'
-
+      data.file = data.file + this.model.getBasename();
+      return data;
+    },
+    template: function(data) {
+      var template = $('#navbarPageView').html();
       return _.template(template, data);
     }
   });
@@ -103,10 +160,10 @@
       var success = function(model, response, options) {
         collection.add(model);
         app.commands.execute('editor:show', model.get('url'));
-      }
+      };
       var error = function(model, response, options) {
         alert(response.responseJSON.error);
-      }
+      };
       model.save(
         {title: title},
         {error: error, success: success, url: 'create'}
@@ -144,7 +201,7 @@
       'change:unsaved': 'onModelChangeUnsaved'
     },
     initialize: function(options) {
-      this.config = options.config
+      this.config = options.config;
       app.commands.setHandler('editor:show', _.bind(this.onEditPage, this));
       app.reqres.setHandler('editor:clear', _.bind(this.onEditorClear, this));
     },
@@ -272,11 +329,11 @@
     }
   });
   var app = window.app = new App;
-  app.on('start', function(options){
+  app.on('start', function(options) {
     var pages = new NavbarPages(options.pages);
     var appView = new AppView();
     var editor = new EditorModel;
-    var editorView = new EditorView({ config: options.editorConfig, model: editor })
+    var editorView = new EditorView({ config: options.editorConfig, model: editor });
 
     appView.getRegion('controls')
       .show(new ControlsView({collection: pages}));
@@ -289,7 +346,7 @@
     // layout
     var resize = function() {
       $('body,#main').height($(window).height());
-    }
+    };
     resize();
     $(window).resize(resize);
 });

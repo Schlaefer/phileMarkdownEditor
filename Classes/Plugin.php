@@ -75,9 +75,7 @@
 		public function editor() {
 			//= setup menuPages
 			$PageRepository = new Page();
-			$menuPages = $PageRepository->findAll(
-				['pages_order' => 'page.url:asc meta.title:asc']
-			);
+			$menuPages = $PageRepository->findAll();
 			$navData = [];
 			foreach ($menuPages as $page) {
 				$navData[] = [
