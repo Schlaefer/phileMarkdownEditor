@@ -103,9 +103,9 @@
     },
     onEventEditorShows: function(id) {
       if (this.model.get('url') === id) {
-        this.$('.post').addClass('open');
+        this.$el.addClass('open');
       } else {
-        this.$('.post').removeClass('open');
+        this.$el.removeClass('open');
       }
     },
     onModelDestroy: function() {
