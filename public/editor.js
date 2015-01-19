@@ -149,6 +149,11 @@
       app.reqres.setHandler('editor:clear', _.bind(this.onEditorClear, this));
     },
     onDomRefresh: function() {
+      // EpicEditor needs root element rendered in document-DOM for init
+      this._initEditor();
+    },
+    _initEditor: function() {
+      this.config.container = this.el;
       var editor = this.editor = new EpicEditor(this.config).load();
 
       // mark as dirty
@@ -174,6 +179,16 @@
           {error: error, success: success, url: 'save'}
         );
       }, this));
+
+      //= resize
+      var resize = _.bind(function() {
+        this.$el.height($(window).height());
+        editor.reflow();
+      }, this);
+      resize();
+      $(window).resize(resize);
+
+      editor.unload();
     },
     onModelChangeShow: function(model, url) {
       var editor = this.editor;
@@ -181,12 +196,14 @@
       //= empty editor
       if (url === null) {
         editor.importFile('epiceditor', '');
+        editor.unload();
         return;
       }
 
       //= load file
       // @todo
       $.post('open', {file: url}, function(data) {
+        editor.load();
         editor.importFile('epiceditor', data);
       });
     },
@@ -256,24 +273,23 @@
   });
   var app = window.app = new App;
   app.on('start', function(options){
-      var pages = new NavbarPages(options.pages);
-      var appView = new AppView();
-      var editor = new EditorModel;
-      var editorView = new EditorView({ config: options.editorConfig, model: editor })
+    var pages = new NavbarPages(options.pages);
+    var appView = new AppView();
+    var editor = new EditorModel;
+    var editorView = new EditorView({ config: options.editorConfig, model: editor })
 
-      appView.getRegion('controls')
-        .show(new ControlsView({collection: pages}));
-      appView.getRegion('editor').show(editorView);
-      appView.getRegion('sideBar')
-        .show(new NavbarPagesView({collection: pages}));
+    appView.getRegion('controls')
+      .show(new ControlsView({collection: pages}));
+    appView.getRegion('editor').show(editorView);
+    appView.getRegion('sideBar')
+      .show(new NavbarPagesView({collection: pages}));
 
-      this._initSettings(options.settings);
+    this._initSettings(options.settings);
 
-      // layout
-      var resize = function() {
-        $('body,#main,#epiceditor').height($(window).height());
-        editorView.editor.reflow();
-      }
-      resize();
+    // layout
+    var resize = function() {
+      $('body,#main').height($(window).height());
+    }
+    resize();
     $(window).resize(resize);
 });
