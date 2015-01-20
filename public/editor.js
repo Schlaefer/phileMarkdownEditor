@@ -13,39 +13,21 @@
         return this[method]();
       }
       return Backbone.Model.prototype.get.call(this, attr);
-    },
-    getBasename: function() {
-      var paths = this.get('url').split('/');
-      var basename = paths.pop();
-      if (_.isEmpty(basename)) {
-        basename = 'index';
-      }
-      basename = basename + '.md';
-      return basename;
-    },
-    getDirname: function() {
-      var paths = this.get('url').split('/');
-      paths.pop();
-      paths = paths.join('/');
-      if (_.isEmpty(paths)) {
-        paths = null;
-      }
-      return paths;
     }
   });
   var NavbarPages = Backbone.Collection.extend({
     model: NavbarPage,
     comparator: function(a, b) {
-      var dirnameA = a.get('dirname');
-      var dirnameB = b.get('dirname');
-      var basenameA = a.get('basename');
-      var basenameB = b.get('basename');
+      var dirnameA = a.get('folder');
+      var dirnameB = b.get('folder');
+      var basenameA = a.get('file');
+      var basenameB = b.get('file');
 
       //= mix root id entries with folder
-      if (_.isEmpty(dirnameA)) {
+      if (dirnameA === '/') {
         dirnameA = basenameA;
       }
-      if (_.isEmpty(dirnameB)) {
+      if (dirnameB === '/') {
         dirnameB = basenameB;
       }
 
@@ -64,6 +46,16 @@
       }
 
       return 0;
+    },
+    getFolders: function() {
+      var folders = new Backbone.Collection;
+      this.each(function(model) {
+        var folder = model.get('folder');
+        if (!folders.get('folder')) {
+          folders.add({id: folder});
+        }
+      });
+      return folders;
     }
   });
   var NavbarPageView = Backbone.Marionette.ItemView.extend({
@@ -109,37 +101,21 @@
       }
     },
     onModelDestroy: function() {
-
       var editorPageId = app.reqres.request('editor:openPageId');
       if (editorPageId === this.model.get('url')) {
         app.reqres.request('editor:clear');
       }
       this.$el.removeClass('open');
     },
-    serializeData: function() {
-      var data = this.model.toJSON();
-      var dirname = this.model.getDirname();
-      if (!data.title) {
-        data.title = 'Untitled';
-      }
-      data.file = '';
-      if (dirname) {
-        data.file = this.model.get('dirname') + '/';
-      }
-      data.file = data.file + this.model.getBasename();
-      return data;
-    },
     template: function(data) {
       var template = $('#navbarPageView').html();
       return _.template(template, data);
     }
   });
-  var NavbarPagesView = Backbone.Marionette.CollectionView.extend({
+  var NavbarPagesView = Backbone.Marionette.CompositeView.extend({
     childView: NavbarPageView,
-    tagName: 'ul'
-  });
-
-  var ControlsView = Backbone.Marionette.ItemView.extend({
+    childViewContainer: 'ul',
+    template: '#navbarPagesView',
     ui: {
       'new': '.new'
     },
@@ -147,32 +123,50 @@
       'click @ui.new': 'onClickNew'
     },
     onClickNew: function(event) {
+      var collection, id, error, model, success, title;
       event.preventDefault();
-      var title = prompt(
-        'Please enter a post title. Use a forward slash to create in a subfolder (existing subfolders only).'
-      );
+      title = prompt('Please enter a file title.');
       if (_.isEmpty(title)) {
         return;
       }
 
-      var model = new NavbarPage;
-      var collection = this.collection;
-      var success = function(model, response, options) {
+      id = this.model.get('id');
+      if (id !== '/') {
+        title = id + '/' + title;
+      }
+
+      model = new NavbarPage;
+      collection = this.collection;
+
+      success = function(model, response, options) {
         collection.add(model);
         app.commands.execute('editor:show', model.get('url'));
       };
-      var error = function(model, response, options) {
+      error = function(model, response, options) {
         alert(response.responseJSON.error);
       };
       model.save(
         {title: title},
         {error: error, success: success, url: 'create'}
       );
-    },
-    template: function(data) {
-      var template = $('#controlsView').html();
-      return _.template(template, data);
     }
+  });
+  var NavbarFoldersView = Backbone.Marionette.CollectionView.extend({
+    childView: NavbarPagesView,
+    pages: null,
+    initialize: function(options) {
+      this.pages = options.pages;
+    },
+    childViewOptions: function(model, index) {
+      var collection = new NavbarPages(this.pages.where({folder: model.get('id')}));
+      return {
+        collection: collection
+      }
+    }
+  });
+
+  var ControlsView = Backbone.Marionette.ItemView.extend({
+    template: '#controlsView'
   });
 
   var EditorModel = Backbone.Model.extend({
@@ -331,6 +325,7 @@
   var app = window.app = new App;
   app.on('start', function(options) {
     var pages = new NavbarPages(options.pages);
+    var folders = pages.getFolders();
     var appView = new AppView();
     var editor = new EditorModel;
     var editorView = new EditorView({ config: options.editorConfig, model: editor });
@@ -339,7 +334,7 @@
       .show(new ControlsView({collection: pages}));
     appView.getRegion('editor').show(editorView);
     appView.getRegion('sideBar')
-      .show(new NavbarPagesView({collection: pages}));
+      .show(new NavbarFoldersView({collection: folders, pages: pages}));
 
     this._initSettings(options.settings);
 
@@ -349,4 +344,4 @@
     };
     resize();
     $(window).resize(resize);
-});
+  });

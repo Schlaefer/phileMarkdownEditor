@@ -5,7 +5,8 @@
 	use Phile\Core\ServiceLocator;
 	use Phile\Core\Utility;
 	use Phile\Exception;
-	use Phile\Repository\Page;
+	use Phile\Plugin\Siezi\PhileMarkdownEditor\Page;
+	use Phile\Repository\Page as Repository;
 
 	/**
 	 * Markdown editor plugin for Phile
@@ -74,14 +75,11 @@
 
 		public function editor() {
 			//= setup menuPages
-			$PageRepository = new Page();
+			$PageRepository = new Repository();
 			$menuPages = $PageRepository->findAll();
 			$navData = [];
 			foreach ($menuPages as $page) {
-				$navData[] = [
-					'title' => $page->getTitle(),
-					'url' => $page->getUrl()
-				];
+				$navData[] = Page::filePropertiesFromPage($page);
 			}
 
 			$appSettings = [
@@ -110,20 +108,20 @@
 			try {
 				$title = $this->_Request->param('title');
 				$content = '<!--
-	Title: ' . $title . '
-	Author:
-	Date: ' . date('Y-m-d') . '
-	-->
+Title: ' . $title . '
+Author:
+Date: ' . date('Y-m-d') . '
+-->
 
 	';
 
 				$file = new ContentFile();
 				$file->create($title, $content);
-				$body = [
-					'title' => $title,
-					'content' => $content,
-					'url' => $file->getFilename(),
-				];
+
+				$PageRepository = new Repository();
+				$page = $PageRepository->findByPath($title);
+				$body = Page::filePropertiesFromPage($page);
+				$body += ['content' => $content];
 			} catch (Exception $e) {
 				$this->_Response->setStatusCode(400);
 				$body = ['error' => $e->getMessage()];

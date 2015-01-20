@@ -1,3 +1,4 @@
+//noinspection JSUnresolvedFunction
 describe('app', function() {
 
   describe('editor', function() {
@@ -20,37 +21,14 @@ describe('app', function() {
   });
 
   describe('navbar', function() {
-    describe('model', function() {
-      it('resolves dirname', function() {
-        var model = new NavbarPage({ url: 'foo/bar' })
-        var dirname = model.get('dirname');
-        expect(dirname).toEqual('foo')
-      });
-      it('resolves root dirname', function() {
-        var model = new NavbarPage({  url: 'bar' })
-        var dirname = model.get('dirname');
-        expect(dirname).toEqual(null)
-      })
-      it('resolves sub basename', function() {
-        var model = new NavbarPage({  url: 'bar/bar' })
-        var dirname = model.get('basename');
-        expect(dirname).toEqual('bar.md')
-      })
-      it('resolves root basename', function() {
-        var model = new NavbarPage({  url: 'bar' })
-        var dirname = model.get('basename');
-        expect(dirname).toEqual('bar.md')
-      })
-    });
-
     describe('collection', function() {
       it('has sort order', function() {
         var collection = new NavbarPages([
-          {url: 'sub/page2'},
-          {url: 'sub/aaa/page1'},
-          {url: 'sub/page1'},
-          {url: 'toot2'},
-          {url: 'root1'},
+          {url: 'sub/page2', folder: 'sub', file: 'page2'},
+          {url: 'sub/aaa/page1', folder: 'sub/aaa', file: 'page1'},
+          {url: 'sub/page1', folder: 'sub', file: 'page1'},
+          {url: 'toot2',  folder: '/', file: 'toot2'},
+          {url: 'root1', folder: '/', file: 'root1'}
         ]);
         var result = collection.pluck('url');
         var expected = [
