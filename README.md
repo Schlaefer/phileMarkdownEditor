@@ -1,7 +1,8 @@
 # Phile Markdown Editor Plugin #
 
-
 Provides an online Markdown editor and file manager for Phile.
+
+![](https://raw.githubusercontent.com/Schlaefer/phileMarkdownEditor/master/screenshot.png)
 
 This is a rewrite/fork of [Pico-Editor-Plugin](https://github.com/gilbitron/Pico-Editor-Plugin) 1.1 for Phile.
 
@@ -30,5 +31,3 @@ After you have installed the plugin. You need to add the following line to your 
 1. goto URL `admin/password` and create a password hash
 2. put this hash into `plugins/siezi/phileMarkdownEditor/config.php`
 3. goto URL `admin/` to login
-
-
