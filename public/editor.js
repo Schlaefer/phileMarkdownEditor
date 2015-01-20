@@ -256,6 +256,10 @@
       $.post('open', {file: url}, function(data) {
         editor.load();
         editor.importFile('epiceditor', data);
+        if (!editor.is('edit')) {
+          editor.edit();
+        }
+
       });
     },
     onModelChangeUnsaved: function(model) {
