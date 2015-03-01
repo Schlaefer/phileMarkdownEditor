@@ -10,17 +10,13 @@
 	 * @license http://opensource.org/licenses/MIT
 	 * @package Phile\Plugin\Siezi\PhileMarkdownEditor
 	 */
-	class Response {
-
-		public $body = '';
+	class Response extends \Phile\Core\Response{
 
 		protected $_base;
 
 		protected $_baseUrl;
 
 		protected $_headers = [];
-
-		protected $_statusCode = 200;
 
 		public function __construct($baseUrl, $base) {
 			$this->_baseUrl = $baseUrl;
@@ -32,17 +28,11 @@
 			$this->stop();
 		}
 
-		public function setStatusCode($code) {
-			$this->_statusCode = $code;
-		}
-
 		public function send() {
 			foreach($this->_headers as $header) {
 				header($header);
 			}
-			// override Phile's 404 header
-			http_response_code($this->_statusCode);
-			echo $this->body;
+			parent::send();
 			$this->stop();
 		}
 

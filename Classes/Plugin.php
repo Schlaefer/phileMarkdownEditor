@@ -128,7 +128,7 @@ Date: ' . date('Y-m-d') . '
 			}
 
 			$this->_Response->type('json');
-			$this->_Response->body = json_encode($body);
+			$this->_Response->setBody($body);
 		}
 
 		public function destroy() {
@@ -140,7 +140,7 @@ Date: ' . date('Y-m-d') . '
 		public function open() {
 			$title = $this->_Request->param('file');
 			$file = new ContentFile($title);
-			$this->_Response->body = $file->read();
+			$this->_Response->setBody($file->read());
 		}
 
 		public function save() {
@@ -154,8 +154,8 @@ Date: ' . date('Y-m-d') . '
 			$this->_clearPageCache($file);
 
 			$this->_Response->type('json');
-			$this->_Response->body = json_encode(
-				['content' => $content]
+			$this->_Response->setBody(
+				json_encode(['content' => $content])
 			);
 		}
 
@@ -223,8 +223,11 @@ Date: ' . date('Y-m-d') . '
 			];
 
 			//= render
-			$this->_Response->body = $this->_TemplateEngine->render(
-				'pages' . DIRECTORY_SEPARATOR . $file . '.twig', $vars);
+			$this->_Response->setBody(
+				$this->_TemplateEngine->render(
+					'pages' . DIRECTORY_SEPARATOR . $file . '.twig', $vars
+				)
+			);
 		}
 
 
