@@ -2,11 +2,10 @@
   "name": "siezi/phile-markdown-editor",
   "type": "phile-plugin",
   "license": "MIT",
-  "description": "Online Markdown editor for Phile",
+  "description": "Online Markdown Editor for Phile",
   "homepage": "https://github.com/Schlaefer/phileMarkdownEditor",
   "keywords": ["phile", "markdown", "editor"],
   "require": {
-    "phile-cms/phile": ">=1.4",
-    "phile-cms/plugin-installer-plugin": ">=1"
+    "phile-cms/phile": ">=1.5.0"
   }
 }

@@ -1,113 +1,120 @@
 <?php
 
-	namespace Phile\Plugin\Siezi\PhileMarkdownEditor;
+namespace Phile\Plugin\Siezi\PhileMarkdownEditor;
 
-	use Phile\Core\ServiceLocator;
-	use Phile\Core\Utility;
-	use Phile\Exception;
-	use Phile\Plugin\Siezi\PhileMarkdownEditor\Page;
-	use Phile\Repository\Page as Repository;
+use Phile\Core\ServiceLocator;
+use Phile\Core\Utility;
+use Phile\Exception;
+use Phile\Plugin\Siezi\PhileMarkdownEditor\Page;
+use Phile\Repository\Page as Repository;
 
-	/**
-	 * Markdown editor plugin for Phile
-	 *
-	 * @author Schlaefer <openmail+sourcecode@siezi.com>
-	 * @link https://github.com/Schlaefer/phileMarkdownEditor
-	 * @license http://opensource.org/licenses/MIT
-	 * @package Phile\Plugin\Siezi\PhileMarkdownEditor
-	 */
+/**
+ * Markdown editor plugin for Phile
+ *
+ * @author Schlaefer <openmail+sourcecode@siezi.com>
+ * @link https://github.com/Schlaefer/phileMarkdownEditor
+ * @license http://opensource.org/licenses/MIT
+ * @package Phile\Plugin\Siezi\PhileMarkdownEditor
+ */
+class Plugin extends \Phile\Plugin\AbstractPlugin implements \Phile\Gateway\EventObserverInterface
+{
 
-	class Plugin extends \Phile\Plugin\AbstractPlugin implements \Phile\Gateway\EventObserverInterface {
+    protected $events = [
+        'request_uri' => 'onRequestUri',
+        'template_engine_registered' => 'onTemplateEngineRegistered'
+    ];
 
-		protected $_allowedActions = [
-			'login',
-			'logout',
-			'password'
-		];
+    protected $_allowedActions = [
+        'login',
+        'logout',
+        'password'
+    ];
 
-		/**
-		 * @var Auth
-		 */
-		protected $_Auth;
+    /**
+     * @var Auth
+     */
+    protected $_Auth;
 
-		protected $_Request;
+    protected $_Request;
 
-		protected $_Response;
+    protected $_Response;
 
-		protected $_phile;
+    protected $templateVars;
 
-		protected $_pluginPath;
+    protected $_TemplateEngine;
 
-		protected $_TemplateEngine;
+    public function onRequestUri($data)
+    {
+        $this->_Request = new Request($_REQUEST, $this->settings['uri']);
+        $this->_Request->setUri($data['uri']);
+        $this->_Request->setBase($this->settings['uri']);
+    }
 
-		public function __construct() {
-			\Phile\Event::registerEvent('request_uri', $this);
-			\Phile\Event::registerEvent('template_engine_registered', $this);
+    public function onTemplateEngineRegistered($data)
+    {
+        // current page is not an editor page
+        if (!$this->_Request->isEditor()) {
+            return;
+        }
 
-			$this->_pluginPath = dirname(dirname(__FILE__));
-			$this->_Request = new Request($_REQUEST, $this->settings['uri']);
-		}
+        $this->templateVars = $data['data'];
+        $this->_Auth = new Auth(
+            $this->_Request,
+            $this->settings['password']
+        );
+        $this->_Response = new Response(
+            $this->templateVars['base_url'],
+            $this->settings['uri']
+        );
 
-		public function on($eventKey, $data = null) {
-			if ($eventKey === 'request_uri') {
-				$this->_Request->setUri($data['uri']);
-				$this->_Request->setBase($this->settings['uri']);
-				return;
-			}
+        $loader = new \Twig_Loader_Filesystem($this->getPluginPath());
+        $this->_TemplateEngine = new \Twig_Environment(
+            $loader,
+            $this->templateVars
+        );
 
-			// current page is not an editor page
-			if (!$this->_Request->isEditor()) {
-				return;
-			}
+        $this->_dispatch();
+    }
 
-			if ($eventKey === 'template_engine_registered') {
-				$this->_phile = $data['data'];
-				$this->_Auth = new Auth($this->_Request, $this->settings['password']);
-				$this->_Response = new Response($this->_phile['base_url'],
-					$this->settings['uri']);
+    public function editor()
+    {
+        //= setup menuPages
+        $PageRepository = new Repository();
+        $menuPages = $PageRepository->findAll();
+        $navData = [];
+        foreach ($menuPages as $page) {
+            $navData[] = Page::filePropertiesFromPage($page);
+        }
 
-				$loader = new \Twig_Loader_Filesystem($this->_pluginPath);
-				$this->_TemplateEngine = new \Twig_Environment($loader, $this->_phile);
+        $appSettings = [
+            'baseUrl' => Utility::getBaseUrl()
+        ];
 
-				$this->_dispatch();
-			}
-		}
+        $data = [
+            'appSettings' => json_encode($appSettings),
+            'navData' => json_encode($navData),
+        ];
 
-		public function editor() {
-			//= setup menuPages
-			$PageRepository = new Repository();
-			$menuPages = $PageRepository->findAll();
-			$navData = [];
-			foreach ($menuPages as $page) {
-				$navData[] = Page::filePropertiesFromPage($page);
-			}
+        $this->_render('editor', $data);
+    }
 
-			$appSettings = [
-				'baseUrl' => Utility::getBaseUrl()
-			];
+    public function login()
+    {
+        $data['authEnabled'] = $this->_Auth->authEnabled();
+        $this->_render('login', $data);
+    }
 
-			$data = [
-				'appSettings' => json_encode($appSettings),
-				'navData' => json_encode($navData),
-			];
+    public function logout()
+    {
+        $this->_Auth->logout();
+        $this->_Response->redirect('login');
+    }
 
-			$this->_render('editor', $data);
-		}
-
-		public function login() {
-			$data['authEnabled'] = $this->_Auth->authEnabled();
-			$this->_render('login', $data);
-		}
-
-		public function logout() {
-			$this->_Auth->logout();
-			$this->_Response->redirect('login');
-		}
-
-		public function create() {
-			try {
-				$title = $this->_Request->param('title');
-				$content = '<!--
+    public function create()
+    {
+        try {
+            $title = $this->_Request->param('title');
+            $content = '<!--
 Title: ' . $title . '
 Author:
 Date: ' . date('Y-m-d') . '
@@ -115,120 +122,121 @@ Date: ' . date('Y-m-d') . '
 
 	';
 
-				$file = new ContentFile();
-				$file->create($title, $content);
+            $file = new ContentFile();
+            $file->create($title, $content);
 
-				$PageRepository = new Repository();
-				$page = $PageRepository->findByPath($title);
-				$body = Page::filePropertiesFromPage($page);
-				$body += ['content' => $content];
-			} catch (Exception $e) {
-				$this->_Response->setStatusCode(400);
-				$body = ['error' => $e->getMessage()];
-			}
+            $PageRepository = new Repository();
+            $page = $PageRepository->findByPath($title);
+            $body = Page::filePropertiesFromPage($page);
+            $body += ['content' => $content];
+        } catch (Exception $e) {
+            $this->_Response->setStatusCode(400);
+            $body = ['error' => $e->getMessage()];
+        }
 
-			$this->_Response->type('json');
-			$this->_Response->setBody($body);
-		}
+        $this->_Response->type('json');
+        $this->_Response->setBody($body);
+    }
 
-		public function destroy() {
-			$title = $this->_Request->param('file');
-			$file = new ContentFile($title);
-			$file->delete();
-		}
+    public function destroy()
+    {
+        $title = $this->_Request->param('file');
+        $file = new ContentFile($title);
+        $file->delete();
+    }
 
-		public function open() {
-			$title = $this->_Request->param('file');
-			$file = new ContentFile($title);
-			$this->_Response->setBody($file->read());
-		}
+    public function open()
+    {
+        $title = $this->_Request->param('file');
+        $file = new ContentFile($title);
+        $this->_Response->setBody($file->read());
+    }
 
-		public function save() {
-			$content = $this->_Request->param('content');
-			if (!$content) {
-				throw new Exception();
-			}
-			$url = $this->_Request->param('show');
-			$file = new ContentFile($url);
-			$file->write($content);
-			$this->_clearPageCache($file);
+    public function save()
+    {
+        $content = $this->_Request->param('content');
+        if (!$content) {
+            throw new Exception();
+        }
+        $url = $this->_Request->param('show');
+        $file = new ContentFile($url);
+        $file->write($content);
+        $this->_clearPageCache();
 
-			$this->_Response->type('json');
-			$this->_Response->setBody(
-				json_encode(['content' => $content])
-			);
-		}
+        $this->_Response->type('json');
+        $this->_Response->setBody(
+            json_encode(['content' => $content])
+        );
+    }
 
-		public function password() {
-			$data = [];
-			$passwordHash = $this->_Request->param('passwordToHash');
-			if ($passwordHash) {
-				$data = [
-					'hashedPassword' => $this->_Auth->hash($passwordHash)
-				];
-			}
-			$this->_render('password', $data);
-		}
+    public function password()
+    {
+        $data = [];
+        $passwordHash = $this->_Request->param('passwordToHash');
+        if ($passwordHash) {
+            $data = [
+                'hashedPassword' => $this->_Auth->hash($passwordHash)
+            ];
+        }
+        $this->_render('password', $data);
+    }
 
-		public function test() {
-			$this->_render('test');
-		}
+    public function test()
+    {
+        $this->_render('test');
+    }
 
-		/**
-		 * clears page cache
-		 *
-		 * @param ContentFile $File
-		 * @throws Exception\ServiceLocatorException
-		 */
-		protected function _clearPageCache(ContentFile $File) {
-			if (ServiceLocator::hasService('Phile_Cache')) {
-				$fullPath = $File->getFullPath();
-				$cache = ServiceLocator::getService('Phile_Cache');
-				$key = 'Phile_Model_Page_' . md5($fullPath);
-				$cache->delete($key);
-			}
-		}
+    /**
+     * clears cache
+     */
+    protected function _clearPageCache()
+    {
+        if (!ServiceLocator::hasService('Phile_Cache')) {
+            return;
+        }
+        $cache = ServiceLocator::getService('Phile_Cache');
+        $cache->clean();
+    }
 
-		protected function _dispatch() {
-			$action = $this->_Request->getAction();
+    protected function _dispatch()
+    {
+        $action = $this->_Request->getAction();
 
-			if ($action === '/') {
-				$this->_Response->redirect('editor');
-			}
+        if ($action === '/') {
+            $this->_Response->redirect('editor');
+        }
 
-			$reflection = new \ReflectionMethod($this, $action);
-			if ($action === 'on' || !$reflection->isPublic()) {
-				// page not found
-				return;
-			}
+        $reflection = new \ReflectionMethod($this, $action);
+        if ($action === 'on' || !$reflection->isPublic()) {
+            // page not found
+            return;
+        }
 
-			$authorized = $this->_Auth->auth();
-			if (in_array($action, $this->_allowedActions)) {
-				if ($action === 'login' && $authorized) {
-					$this->_Response->redirect('editor');
-				}
-			} elseif (!$authorized) {
-				$this->_Response->redirect('login');
-			}
+        $authorized = $this->_Auth->auth();
+        if (in_array($action, $this->_allowedActions)) {
+            if ($action === 'login' && $authorized) {
+                $this->_Response->redirect('editor');
+            }
+        } elseif (!$authorized) {
+            $this->_Response->redirect('login');
+        }
 
-			$this->$action();
-			$this->_Response->send();
-		}
+        $this->$action();
+        $this->_Response->send();
+    }
 
-		protected function _render($file, $vars = []) {
-			//= setup other view vars
-			$vars += $this->_phile;
-			$vars += [
-				'pluginUrl' => $this->_phile['base_url'] . '/plugins/siezi/phileMarkdownEditor'
-			];
+    protected function _render($file, $vars = [])
+    {
+        //= setup other view vars
+        $vars += $this->templateVars;
+        $vars += [
+            'pluginUrl' => $this->templateVars['base_url'] . '/plugins/siezi/phileMarkdownEditor'
+        ];
 
-			//= render
-			$this->_Response->setBody(
-				$this->_TemplateEngine->render(
-					'pages' . DIRECTORY_SEPARATOR . $file . '.twig', $vars
-				)
-			);
-		}
+        //= render
+        $template = 'pages/' . $file . '.twig';
+        $html = $this->_TemplateEngine->render($template, $vars);
+        $this->_Response->setBody($html);
+    }
 
-
-	}
+}
