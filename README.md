@@ -1,3 +1,5 @@
+***! This plugin is not longer maintained and superseded by [the Phile Admin Markdown Editor plugin](https://github.com/Schlaefer/phileAdminMarkdownEditor) !***
+
 # Phile Markdown Editor Plugin #
 
 Provides an online Markdown editor and file manager for Phile.
